@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Álbum del Mundial · Winclap
 
-## Getting Started
+App web para completar el álbum del Mundial entre todos los de la oficina y
+sortearlo al final, con probabilidad proporcional a los puntos de cada uno.
 
-First, run the development server:
+- **Stack:** Next.js 16 (App Router) · React 19 · Tailwind v4 · Supabase (Postgres + Auth + RLS).
+- **Acceso:** login con Google restringido a `@winclap.com`. Admin: `franco.pairone@winclap.com`.
+
+## Correr local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # completar con los valores de Supabase
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Base de datos (Supabase)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Correr en el SQL Editor, en orden:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `supabase/schema.sql` (instalación nueva) — o las migraciones `migration_v2 … v7` si ya existía.
+2. `supabase/seed_album_real.sql` — carga el catálogo real (994 figuritas).
 
-## Learn More
+Auth: habilitar **Google** en Authentication → Providers, y en **URL Configuration**
+agregar la Site URL y los Redirect URLs (`http://localhost:3000/**` y el dominio de producción `/**`).
 
-To learn more about Next.js, take a look at the following resources:
+## Modelo de puntos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Aporte | Puntos |
+|---|---|
+| Repe | 1 |
+| Cambio | 2 |
+| Nueva común | 3 |
+| Nueva formación/escudo (1 y 13 de cada país) | 4 |
+| Nueva especial (Coca / We Are Panini / FWC) | 5 |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+El admin puede sumar/restar puntos a su criterio. Los ganadores de logros suman +50 al completar el álbum.
 
-## Deploy on Vercel
+## Deploy (Netlify)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Subir el repo a GitHub.
+2. En Netlify: *Import from Git* → seleccionar el repo.
+3. Variables de entorno: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4. En Supabase → URL Configuration agregar el dominio de Netlify (Site URL + Redirect `/**`).

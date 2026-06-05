@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark theme — inspirado en prode-wc2026 */
+  --background: #090b0b;   /* casi negro */
+  --foreground: #f3f6f6;   /* texto principal */
+  --card: #0e1315;         /* superficie elevada */
+  --card-2: #121a1c;       /* superficie 2 (hover/inputs) */
+  --border: #1d272a;       /* bordes sutiles */
+  --muted: #8a9a9e;        /* texto secundario */
+
+  /* Winclap brand */
+  --green: #27e1c1;   /* Smart Green (teal) — identidad / CTAs */
+  --orange: #fe805b;  /* Visionary Red */
+  --purple: #ceabff;  /* Dreamy Purple */
+  --blue: #87dbff;    /* Logical Light Blue */
+  --pink: #ff6568;    /* Human Pink / rojo acento */
+  --yellow: #ffd447;  /* Positive Yellow */
+  --black: #000000;
+
+  /* fondos suaves (translúcidos) de cada acento sobre negro */
+  --green-bg: rgba(39, 225, 193, 0.10);
+  --orange-bg: rgba(254, 128, 91, 0.12);
+  --purple-bg: rgba(206, 171, 255, 0.12);
+  --blue-bg: rgba(135, 219, 255, 0.12);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+
+  --color-green: var(--green);
+  --color-orange: var(--orange);
+  --color-purple: var(--purple);
+  --color-blue: var(--blue);
+  --color-pink: var(--pink);
+  --color-yellow: var(--yellow);
+  --color-brand: var(--green);
+
+  --color-green-bg: var(--green-bg);
+  --color-orange-bg: var(--orange-bg);
+  --color-purple-bg: var(--purple-bg);
+  --color-blue-bg: var(--blue-bg);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
+html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+.font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* select con flecha visible en dark */
+select {
+  color-scheme: dark;
+}
+
+/* ocultar scrollbar (nav horizontal en mobile) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide spinner on number inputs */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
