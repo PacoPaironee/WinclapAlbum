@@ -1,6 +1,6 @@
 import AporteAcciones from "@/components/AporteAcciones";
 import { getPendientes, getProgreso } from "@/lib/data";
-import { calcularPuntos } from "@/lib/points";
+import { calcularPuntos, categoriaFigu } from "@/lib/points";
 import { formatDate } from "@/lib/format";
 import type { TipoAporte } from "@/lib/types";
 
@@ -46,15 +46,24 @@ export default async function AdminValidarPage() {
                     <span className="text-xs px-2 py-0.5 rounded-full bg-green-bg font-semibold">
                       {tipoLabel[a.tipo]}
                     </span>
-                    {a.figuritas?.es_especial ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-orange text-white font-bold">
-                        Especial · 5
-                      </span>
-                    ) : a.figuritas?.es_formacion ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-yellow/20 text-yellow font-bold">
-                        Formación · 4
-                      </span>
-                    ) : null}
+                    {(() => {
+                      const cat = categoriaFigu(
+                        a.figuritas?.codigo ?? "",
+                        a.figuritas?.es_especial,
+                        a.figuritas?.es_formacion,
+                      );
+                      return cat ? (
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                            cat.pts === 5
+                              ? "bg-orange text-white"
+                              : "bg-yellow/20 text-yellow"
+                          }`}
+                        >
+                          {cat.label} · {cat.pts}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="text-sm text-muted mt-0.5">
                     {a.figuritas?.codigo}

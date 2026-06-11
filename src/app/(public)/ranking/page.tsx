@@ -1,4 +1,5 @@
 import { getRanking, getFeed, getLogros } from "@/lib/data";
+import { categoriaFigu } from "@/lib/points";
 
 const medallas = ["🥇", "🥈", "🥉"];
 
@@ -98,11 +99,14 @@ export default async function RankingPage() {
                 </span>
                 <span className="min-w-0 truncate">
                   · {a.tipo} · {a.figuritas?.codigo}
-                  {a.figuritas?.es_especial
-                    ? " · especial"
-                    : a.figuritas?.es_formacion
-                      ? " · formación"
-                      : ""}
+                  {(() => {
+                    const cat = categoriaFigu(
+                      a.figuritas?.codigo ?? "",
+                      a.figuritas?.es_especial,
+                      a.figuritas?.es_formacion,
+                    );
+                    return cat ? ` · ${cat.label.toLowerCase()}` : "";
+                  })()}
                   {a.puntos_extra > 0 ? ` · +${a.puntos_extra} extra` : ""}
                   {a.puntos_bonus > 0 ? ` · 🎯 +${a.puntos_bonus} selección` : ""}
                 </span>

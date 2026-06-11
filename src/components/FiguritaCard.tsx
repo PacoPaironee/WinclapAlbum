@@ -1,7 +1,9 @@
 import type { FiguritaConSeleccion } from "@/lib/data";
+import { categoriaFigu } from "@/lib/points";
 
 export default function FiguritaCard({ fig }: { fig: FiguritaConSeleccion }) {
   const pegada = fig.estado === "pegada";
+  const cat = categoriaFigu(fig.codigo, fig.es_especial, fig.es_formacion);
   return (
     <div
       className={`relative rounded-xl border p-3 flex flex-col gap-1 ${
@@ -15,21 +17,17 @@ export default function FiguritaCard({ fig }: { fig: FiguritaConSeleccion }) {
           {fig.codigo}
         </span>
         <div className="flex items-center gap-1">
-          {fig.es_especial ? (
+          {cat && (
             <span
-              title="Especial (Coca / We Are Panini / FWC) — vale 5"
-              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange text-white"
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                cat.pts === 5
+                  ? "bg-orange text-white"
+                  : "bg-yellow/20 text-yellow"
+              }`}
             >
-              Especial · 5
+              {cat.label} · {cat.pts}
             </span>
-          ) : fig.es_formacion ? (
-            <span
-              title="Formación / escudo (1 y 13) — vale 4"
-              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-yellow/20 text-yellow"
-            >
-              Formación · 4
-            </span>
-          ) : null}
+          )}
         </div>
       </div>
 

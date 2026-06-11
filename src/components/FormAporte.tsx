@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useRef, useState } from "react";
 import { crearAportes, type FormState } from "@/lib/actions";
-import { calcularPuntos } from "@/lib/points";
+import { calcularPuntos, categoriaFigu } from "@/lib/points";
 import type { TipoAporte } from "@/lib/types";
 import type { FiguritaConSeleccion } from "@/lib/data";
 
@@ -188,15 +188,24 @@ export default function FormAporte({
                       </span>
                     )}
                   </span>
-                  {f.es_especial ? (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange text-white shrink-0">
-                      Especial · 5
-                    </span>
-                  ) : f.es_formacion ? (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-yellow/20 text-yellow shrink-0">
-                      Formación · 4
-                    </span>
-                  ) : null}
+                  {(() => {
+                    const cat = categoriaFigu(
+                      f.codigo,
+                      f.es_especial,
+                      f.es_formacion,
+                    );
+                    return cat ? (
+                      <span
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                          cat.pts === 5
+                            ? "bg-orange text-white"
+                            : "bg-yellow/20 text-yellow"
+                        }`}
+                      >
+                        {cat.label} · {cat.pts}
+                      </span>
+                    ) : null;
+                  })()}
                   {f.estado === "pegada" ? (
                     <span className="text-[10px] font-bold text-green shrink-0">
                       pegada · repe
@@ -294,15 +303,22 @@ export default function FormAporte({
                       : ""}
                   </span>
                 </span>
-                {it.es_especial ? (
-                  <span className="text-[10px] font-bold text-orange shrink-0">
-                    especial
-                  </span>
-                ) : it.es_formacion ? (
-                  <span className="text-[10px] font-bold text-yellow shrink-0">
-                    formación
-                  </span>
-                ) : null}
+                {(() => {
+                  const cat = categoriaFigu(
+                    it.codigo,
+                    it.es_especial,
+                    it.es_formacion,
+                  );
+                  return cat ? (
+                    <span
+                      className={`text-[10px] font-bold shrink-0 ${
+                        cat.pts === 5 ? "text-orange" : "text-yellow"
+                      }`}
+                    >
+                      {cat.label.toLowerCase()}
+                    </span>
+                  ) : null;
+                })()}
                 <span className="font-display font-bold text-green shrink-0">
                   +{estimar(it)}
                 </span>
@@ -384,15 +400,22 @@ function CartRow({
             </span>
           )}
         </span>
-        {item.es_especial ? (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-orange text-white shrink-0">
-            Especial · 5
-          </span>
-        ) : item.es_formacion ? (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-yellow/20 text-yellow shrink-0">
-            Formación · 4
-          </span>
-        ) : null}
+        {(() => {
+          const cat = categoriaFigu(
+            item.codigo,
+            item.es_especial,
+            item.es_formacion,
+          );
+          return cat ? (
+            <span
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                cat.pts === 5 ? "bg-orange text-white" : "bg-yellow/20 text-yellow"
+              }`}
+            >
+              {cat.label} · {cat.pts}
+            </span>
+          ) : null;
+        })()}
         <button
           type="button"
           onClick={onRemove}

@@ -13,9 +13,24 @@ export function calcularPuntos(
   return fig.especial ? 5 : fig.formacion ? 4 : 3;
 }
 
+// Categoría de una figurita para mostrar (etiqueta + puntos).
+// La 1 de cada país es el "Escudo" y la 13 la "Formación" (ambas valen 4).
+export function categoriaFigu(
+  codigo: string,
+  esEspecial?: boolean,
+  esFormacion?: boolean,
+): { label: string; pts: number } | null {
+  if (esEspecial) return { label: "Especial", pts: 5 };
+  if (esFormacion) {
+    const num = parseInt(codigo.split(" ")[1] ?? "", 10);
+    return { label: num === 1 ? "Escudo" : "Formación", pts: 4 };
+  }
+  return null;
+}
+
 // Para mostrar la tabla de "cómo se suman puntos".
 export const VALOR_FIGURITA = [
   { t: "Normal", p: 3, d: "Cualquier figurita común" },
-  { t: "Formación / escudo", p: 4, d: "Figuritas 1 y 13 de cada país" },
+  { t: "Escudo / formación", p: 4, d: "Figuritas 1 y 13 de cada país" },
   { t: "Especial", p: 5, d: "Coca, We Are Panini y FIFA World Cup History" },
 ];

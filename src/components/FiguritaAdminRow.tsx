@@ -4,11 +4,13 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setEstadoFigurita, setRepetidas } from "@/lib/actions";
 import type { FiguritaConSeleccion } from "@/lib/data";
+import { categoriaFigu } from "@/lib/points";
 
 export default function FiguritaAdminRow({ fig }: { fig: FiguritaConSeleccion }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const pegada = fig.estado === "pegada";
+  const cat = categoriaFigu(fig.codigo, fig.es_especial, fig.es_formacion);
 
   function act(fn: () => Promise<unknown>) {
     start(async () => {
@@ -27,11 +29,14 @@ export default function FiguritaAdminRow({ fig }: { fig: FiguritaConSeleccion })
         <div className="font-mono text-xs font-bold">{fig.codigo}</div>
         <div className="text-sm truncate">
           {fig.nombre ?? fig.selecciones?.nombre ?? "—"}
-          {fig.es_especial ? (
-            <span className="text-orange font-bold"> · especial 5</span>
-          ) : fig.es_formacion ? (
-            <span className="text-yellow font-bold"> · formación 4</span>
-          ) : null}
+          {cat && (
+            <span
+              className={`font-bold ${cat.pts === 5 ? "text-orange" : "text-yellow"}`}
+            >
+              {" "}
+              · {cat.label.toLowerCase()} {cat.pts}
+            </span>
+          )}
         </div>
       </div>
 

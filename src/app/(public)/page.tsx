@@ -26,9 +26,10 @@ export default async function HomePage() {
           Álbum del Mundial · Winclap
         </p>
         <h1 className="font-display text-4xl sm:text-5xl font-bold leading-tight mb-4">
-          Lo llenamos entre todos.
+          Armemos el álbum entre todos
           <br />
-          Después lo sorteamos.
+          y que la suerte{" "}
+          <span className="text-green">levante la copa.</span>
         </h1>
         <p className="text-white/70 max-w-xl mb-6">
           Cada figurita que traés suma puntos, y los puntos son tus chances en el
