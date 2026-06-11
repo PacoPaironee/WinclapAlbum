@@ -47,8 +47,13 @@ export default function SiteNav({
             height={20}
             className="h-5 w-[91px] shrink-0"
           />
-          <span className="hidden sm:inline text-[11px] font-semibold uppercase tracking-[0.15em] text-green border-l border-border pl-2.5 whitespace-nowrap">
-            Clapbase Córdoba
+          <span className="hidden sm:flex flex-col leading-[1.05] border-l border-border pl-2.5">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-green">
+              Clapbase
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-foreground/60">
+              Córdoba
+            </span>
           </span>
         </Link>
 
