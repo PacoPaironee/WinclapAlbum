@@ -1,16 +1,20 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { TipoAporte } from "@/lib/types";
 
 export type FormState = { ok?: boolean; error?: string; message?: string };
 
 function revalidarTodo() {
+  // Invalida las lecturas cacheadas (álbum, ranking, faltantes, identidad…)
+  revalidateTag("album", "max");
   revalidatePath("/");
   revalidatePath("/album");
   revalidatePath("/repes");
+  revalidatePath("/faltantes");
   revalidatePath("/ranking");
+  revalidatePath("/mis-aportes");
   revalidatePath("/admin");
   revalidatePath("/admin/figuritas");
   revalidatePath("/admin/clappers");
@@ -202,6 +206,7 @@ export async function crearClapper(
   if (!nombre) return { error: "Falta el nombre." };
   const { error } = await supabase.from("clappers").insert({ nombre, email });
   if (error) return { error: "No se pudo crear." };
+  revalidateTag("album", "max");
   revalidatePath("/admin/clappers");
   return { ok: true, message: "Clapper agregado." };
 }
@@ -210,6 +215,7 @@ export async function borrarClapper(clapperId: string): Promise<FormState> {
   const supabase = await createClient();
   const { error } = await supabase.from("clappers").delete().eq("id", clapperId);
   if (error) return { error: "No se pudo borrar." };
+  revalidateTag("album", "max");
   revalidatePath("/admin/clappers");
   return { ok: true };
 }

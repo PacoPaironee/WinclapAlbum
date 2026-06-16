@@ -1,4 +1,6 @@
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { anonClient } from "@/lib/supabase/anon";
 import type {
   Progreso,
   ProgresoSeleccion,
@@ -8,6 +10,11 @@ import type {
   RankingRow,
   Logro,
 } from "@/lib/types";
+
+// Las lecturas públicas (álbum, ranking, etc.) se cachean y se refrescan solas
+// cuando el admin valida/ajusta algo (revalidateTag("album") en las actions).
+// "revalidate" es el respaldo: si algo no invalidó, igual se refresca solo.
+const CACHE = { tags: ["album"], revalidate: 30 };
 
 export type FiguritaConSeleccion = Figurita & {
   selecciones: Pick<Seleccion, "nombre" | "color" | "grupo" | "orden"> | null;
@@ -33,82 +40,131 @@ export function compareFiguritas(
   return na - nb;
 }
 
-export async function getProgreso(): Promise<Progreso> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("v_progreso").select("*").single();
-  return (
-    data ?? { total: 0, pegadas: 0, faltantes: 0, repetidas: 0, porcentaje: 0 }
-  );
-}
+export const getProgreso = unstable_cache(
+  async (): Promise<Progreso> => {
+    const { data } = await anonClient().from("v_progreso").select("*").single();
+    return (
+      data ?? { total: 0, pegadas: 0, faltantes: 0, repetidas: 0, porcentaje: 0 }
+    );
+  },
+  ["progreso"],
+  CACHE,
+);
 
-export async function getProgresoSelecciones(): Promise<ProgresoSeleccion[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("v_progreso_seleccion")
-    .select("*")
-    .order("orden");
-  return data ?? [];
-}
+export const getProgresoSelecciones = unstable_cache(
+  async (): Promise<ProgresoSeleccion[]> => {
+    const { data } = await anonClient()
+      .from("v_progreso_seleccion")
+      .select("*")
+      .order("orden");
+    return data ?? [];
+  },
+  ["progreso_seleccion"],
+  CACHE,
+);
 
-export async function getSelecciones(): Promise<Seleccion[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("selecciones")
-    .select("*")
-    .order("orden");
-  return data ?? [];
-}
+export const getSelecciones = unstable_cache(
+  async (): Promise<Seleccion[]> => {
+    const { data } = await anonClient()
+      .from("selecciones")
+      .select("*")
+      .order("orden");
+    return data ?? [];
+  },
+  ["selecciones"],
+  CACHE,
+);
 
-export async function getFiguritas(filtros: {
-  seleccion?: string;
-  estado?: string;
-}): Promise<FiguritaConSeleccion[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("figuritas")
-    .select("*, selecciones(nombre, color, grupo, orden)");
+export const getFiguritas = unstable_cache(
+  async (filtros: {
+    seleccion?: string;
+    estado?: string;
+  }): Promise<FiguritaConSeleccion[]> => {
+    let query = anonClient()
+      .from("figuritas")
+      .select("*, selecciones(nombre, color, grupo, orden)");
 
-  if (filtros.seleccion) query = query.eq("seleccion_id", filtros.seleccion);
-  if (filtros.estado === "faltante") query = query.eq("estado", "faltante");
-  if (filtros.estado === "pegada") query = query.eq("estado", "pegada");
-  if (filtros.estado === "repe") query = query.gt("repetidas", 0);
-  if (filtros.estado === "especial") query = query.eq("es_especial", true);
-  if (filtros.estado === "formacion") query = query.eq("es_formacion", true);
+    if (filtros.seleccion) query = query.eq("seleccion_id", filtros.seleccion);
+    if (filtros.estado === "faltante") query = query.eq("estado", "faltante");
+    if (filtros.estado === "pegada") query = query.eq("estado", "pegada");
+    if (filtros.estado === "repe") query = query.gt("repetidas", 0);
+    if (filtros.estado === "especial") query = query.eq("es_especial", true);
+    if (filtros.estado === "formacion") query = query.eq("es_formacion", true);
 
-  const { data } = await query;
-  return ((data as FiguritaConSeleccion[]) ?? []).sort(compareFiguritas);
-}
+    const { data } = await query;
+    return ((data as FiguritaConSeleccion[]) ?? []).sort(compareFiguritas);
+  },
+  ["figuritas"],
+  CACHE,
+);
 
-export async function getRepes(): Promise<FiguritaConSeleccion[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("figuritas")
-    .select("*, selecciones(nombre, color, grupo, orden)")
-    .gt("repetidas", 0)
-    .order("repetidas", { ascending: false });
-  return (data as FiguritaConSeleccion[]) ?? [];
-}
+export const getRepes = unstable_cache(
+  async (): Promise<FiguritaConSeleccion[]> => {
+    const { data } = await anonClient()
+      .from("figuritas")
+      .select("*, selecciones(nombre, color, grupo, orden)")
+      .gt("repetidas", 0)
+      .order("repetidas", { ascending: false });
+    return (data as FiguritaConSeleccion[]) ?? [];
+  },
+  ["repes"],
+  CACHE,
+);
 
-export async function getFaltantes(): Promise<FiguritaConSeleccion[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("figuritas")
-    .select("*, selecciones(nombre, color, grupo, orden)")
-    .eq("estado", "faltante");
-  return ((data as FiguritaConSeleccion[]) ?? []).sort(compareFiguritas);
-}
+export const getFaltantes = unstable_cache(
+  async (): Promise<FiguritaConSeleccion[]> => {
+    const { data } = await anonClient()
+      .from("figuritas")
+      .select("*, selecciones(nombre, color, grupo, orden)")
+      .eq("estado", "faltante");
+    return ((data as FiguritaConSeleccion[]) ?? []).sort(compareFiguritas);
+  },
+  ["faltantes"],
+  CACHE,
+);
 
-export async function getRanking(): Promise<RankingRow[]> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("v_ranking").select("*");
-  return data ?? [];
-}
+export const getRanking = unstable_cache(
+  async (): Promise<RankingRow[]> => {
+    const { data } = await anonClient().from("v_ranking").select("*");
+    return data ?? [];
+  },
+  ["ranking"],
+  CACHE,
+);
 
-export async function getLogros(): Promise<Logro[]> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("v_logros").select("*");
-  return (data as Logro[]) ?? [];
-}
+export const getLogros = unstable_cache(
+  async (): Promise<Logro[]> => {
+    const { data } = await anonClient().from("v_logros").select("*");
+    return (data as Logro[]) ?? [];
+  },
+  ["logros"],
+  CACHE,
+);
+
+// Ranking + email (para resolver la identidad sin pegarle a la base en cada
+// navegación). Cacheado con el mismo tag "album".
+const getRankingFull = unstable_cache(
+  async (): Promise<
+    { clapper_id: string; email: string | null; puntos: number; aportes: number }[]
+  > => {
+    const sb = anonClient();
+    const [cl, rk] = await Promise.all([
+      sb.from("clappers").select("id, email"),
+      sb.from("v_ranking").select("clapper_id, puntos, aportes"),
+    ]);
+    const rkMap = new Map(
+      (rk.data ?? []).map((r) => [r.clapper_id, r] as const),
+    );
+    return (cl.data ?? []).map((c) => ({
+      clapper_id: c.id as string,
+      email: (c.email as string | null) ?? null,
+      puntos: rkMap.get(c.id)?.puntos ?? 0,
+      aportes: rkMap.get(c.id)?.aportes ?? 0,
+    }));
+  },
+  ["ranking_full"],
+  CACHE,
+);
 
 export type Identity = {
   email: string;
@@ -133,36 +189,31 @@ export async function getIdentity(): Promise<Identity | null> {
     (meta.name as string) ||
     user.email.split("@")[0];
 
-  const { data: rows } = await supabase
-    .from("clappers")
-    .select("id")
-    .ilike("email", user.email)
-    .limit(1);
-  const clapperId = rows?.[0]?.id ?? null;
+  // Puntos/clapper salen del ranking cacheado (no consulta la base por click)
+  const email = user.email.toLowerCase();
+  const full = await getRankingFull();
+  const row = full.find((r) => (r.email ?? "").toLowerCase() === email);
 
-  let puntos = 0;
-  let aportes = 0;
-  if (clapperId) {
-    const { data: r } = await supabase
-      .from("v_ranking")
-      .select("puntos, aportes")
-      .eq("clapper_id", clapperId)
-      .maybeSingle();
-    puntos = r?.puntos ?? 0;
-    aportes = r?.aportes ?? 0;
-  }
-
-  return { email: user.email, nombre, clapperId, puntos, aportes };
+  return {
+    email: user.email,
+    nombre,
+    clapperId: row?.clapper_id ?? null,
+    puntos: row?.puntos ?? 0,
+    aportes: row?.aportes ?? 0,
+  };
 }
 
-export async function getClappers(): Promise<Clapper[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("clappers")
-    .select("*")
-    .order("nombre");
-  return data ?? [];
-}
+export const getClappers = unstable_cache(
+  async (): Promise<Clapper[]> => {
+    const { data } = await anonClient()
+      .from("clappers")
+      .select("*")
+      .order("nombre");
+    return data ?? [];
+  },
+  ["clappers"],
+  CACHE,
+);
 
 type FiguritaMini =
   | (Pick<
